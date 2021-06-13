@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">Quiz</string>
+    <string name="next_button_label">NEXT</string>
+    <string name="default_title">Fun quiz</string>
+    <string name="previous">PREVIOUS</string>
+    <string name="close_quiz">Close quiz</string>
+    <string name="restart">Start again</string>
+    <string name="share">Share result</string>
+    <string name="submit">SUBMIT</string>
 </resources>
