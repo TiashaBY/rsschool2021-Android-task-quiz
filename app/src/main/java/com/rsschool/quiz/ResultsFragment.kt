@@ -17,7 +17,8 @@ import java.util.ArrayList
 
 class ResultsFragment : Fragment() {
 
-    private var viewBinding : FragmentResultBinding? = null
+    private var _binding : FragmentResultBinding? = null
+    private val binding get() = checkNotNull(_binding)
     private var listener: QuizResultsListener? = null
 
     override fun onAttach(context: Context) {
@@ -38,8 +39,8 @@ class ResultsFragment : Fragment() {
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-        viewBinding = FragmentResultBinding.inflate(inflater, container, false)
-        return viewBinding?.root
+        _binding = FragmentResultBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,17 +48,17 @@ class ResultsFragment : Fragment() {
         val results = arguments?.getParcelableArrayList<Question>("RESULT_LIST")
 
         val score = calculateResult(results).toString()
-        viewBinding?.score?.text = "Your result: $score%"
+        binding.score.text = "Your result: $score%"
 
-        viewBinding?.share?.setOnClickListener {
+        binding.share.setOnClickListener {
             sendResults(results)
         }
 
-        viewBinding?.restart?.setOnClickListener{
+        binding.restart.setOnClickListener{
             listener?.resetQuiz()
         }
 
-        viewBinding?.close?.setOnClickListener{
+        binding.close.setOnClickListener{
             listener?.closeQuiz()
         }
     }

@@ -13,7 +13,8 @@ import com.rsschool.quiz.models.Question
 
 class QuestionFragment : Fragment() {
 
-    private var viewBinding : FragmentQuizBinding? = null
+    private var _binding : FragmentQuizBinding? = null
+    private val binding get() = checkNotNull(_binding)
 
     private var currentPosition : Int = -1
     private var activeQuestion : Question? = null
@@ -45,15 +46,15 @@ class QuestionFragment : Fragment() {
 
         val themeContext = setTheme(activeQuestion?.themeId!!)
         val localInflater = inflater.cloneInContext(themeContext)
-        viewBinding = FragmentQuizBinding.inflate(localInflater, container, false)
-        return viewBinding?.root
+        _binding = FragmentQuizBinding.inflate(localInflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         displayQuestion()
 
-        viewBinding?.nextButton?.setOnClickListener {
+        binding.nextButton.setOnClickListener {
             if (currentPosition == (amountOfQuestions - 1)) {
                 listener?.sendResult()
             } else {
@@ -61,33 +62,33 @@ class QuestionFragment : Fragment() {
             }
         }
 
-        viewBinding?.previousButton?.setOnClickListener {
+        binding.previousButton.setOnClickListener {
             listener?.getPrevQuestion(currentPosition)
         }
-        viewBinding?.radioGroup?.setOnCheckedChangeListener { _, checkedId ->
+        binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
-                viewBinding?.optionOne?.id ->
+                binding.optionOne.id ->
                     activeQuestion?.setSelected(0)
-                viewBinding?.optionTwo?.id ->
+                binding.optionTwo.id ->
                     activeQuestion?.setSelected(1)
-                viewBinding?.optionThree?.id ->
+                binding.optionThree.id ->
                     activeQuestion?.setSelected(2)
-                viewBinding?.optionFour?.id ->
+                binding.optionFour.id ->
                     activeQuestion?.setSelected(3)
-                viewBinding?.optionFive?.id ->
+                binding.optionFive.id ->
                     activeQuestion?.setSelected(4)
             }
-            viewBinding?.nextButton?.isEnabled = true
+            binding.nextButton.isEnabled = true
         }
 
-        viewBinding?.toolbar?.setNavigationOnClickListener {
+        binding.toolbar.setNavigationOnClickListener {
             listener?.getPrevQuestion(currentPosition)
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewBinding = null
+        _binding = null
     }
 
     private fun setTheme(themeId: Int): ContextThemeWrapper {
@@ -101,38 +102,36 @@ class QuestionFragment : Fragment() {
     }
 
     private fun displayQuestion() {
-        viewBinding?.question?.text = activeQuestion?.question
-        viewBinding?.toolbar?.title = "Question ${currentPosition+1} of $amountOfQuestions"
-        viewBinding?.optionOne?.text = activeQuestion?.options?.get(0)
-        viewBinding?.optionTwo?.text = activeQuestion?.options?.get(1)
-        viewBinding?.optionThree?.text = activeQuestion?.options?.get(2)
-        viewBinding?.optionFour?.text = activeQuestion?.options?.get(3)
-        viewBinding?.optionFive?.text = activeQuestion?.options?.get(4)
+        binding.question.text = activeQuestion?.question
+        binding.toolbar.title = "Question ${currentPosition+1} of $amountOfQuestions"
+        binding.optionOne.text = activeQuestion?.options?.get(0)
+        binding.optionTwo.text = activeQuestion?.options?.get(1)
+        binding.optionThree.text = activeQuestion?.options?.get(2)
+        binding.optionFour.text = activeQuestion?.options?.get(3)
+        binding.optionFive.text = activeQuestion?.options?.get(4)
 
         //radio
         val selectedAnswer = activeQuestion?.selectedAnswer ?: -1
         if (activeQuestion.let { selectedAnswer >= 0 }) {
-            viewBinding?.radioGroup?.getChildAt(selectedAnswer)?.id?.let {
-                viewBinding?.radioGroup?.check(it)
-            }
+            binding.radioGroup.check(binding.radioGroup.getChildAt(selectedAnswer).id)
         } else {
-            viewBinding?.radioGroup?.clearCheck()
-            viewBinding?.nextButton?.isEnabled = false
+            binding.radioGroup.clearCheck()
+            binding.nextButton.isEnabled = false
         }
 
         //buttons
         when {
             currentPosition <=0 -> {
-                viewBinding?.toolbar?.navigationIcon = null
-                viewBinding?.previousButton?.visibility = View.INVISIBLE
-                viewBinding?.nextButton?.text = getString(com.rsschool.quiz.R.string.next_button_label)
+                binding.toolbar.navigationIcon = null
+                binding.previousButton.visibility = View.INVISIBLE
+                binding.nextButton.text = getString(com.rsschool.quiz.R.string.next_button_label)
             }
             currentPosition == (amountOfQuestions - 1) -> {
-                viewBinding?.nextButton?.text = getString(com.rsschool.quiz.R.string.submit)
+                binding.nextButton.text = getString(com.rsschool.quiz.R.string.submit)
             }
             else -> {
-                viewBinding?.nextButton?.text = getString(com.rsschool.quiz.R.string.next_button_label)
-                viewBinding?.previousButton?.visibility = View.VISIBLE
+                binding.nextButton.text = getString(com.rsschool.quiz.R.string.next_button_label)
+                binding.previousButton.visibility = View.VISIBLE
             }
         }
     }
