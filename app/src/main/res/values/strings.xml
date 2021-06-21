@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Quiz</string>
+    <string name="app_name">Simple Quiz</string>
     <string name="next_button_label">NEXT</string>
     <string name="default_title">Fun quiz</string>
     <string name="previous">PREVIOUS</string>
