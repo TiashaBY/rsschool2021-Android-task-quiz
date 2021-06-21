@@ -3,16 +3,13 @@ package com.rsschool.quiz
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.rsschool.quiz.data.Quiz
-import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity(), QuizNavListener, QuizResultsListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if (savedInstanceState == null) {
-            startQuiz()
-        }
+        startQuiz()
     }
 
     private fun startQuiz() {
@@ -21,15 +18,13 @@ class MainActivity : AppCompatActivity(), QuizNavListener, QuizResultsListener {
     }
 
     private fun createFragment(position: Int) {
-        if (position >=0 && position < Quiz.questions.size) {
             val questionFragment = QuestionFragment.newInstance(
-                Quiz.questions.get(position),
+                Quiz.questions[position],
                 Quiz.questions.size,
-                position
-            )
+                position)
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_quiz_container, questionFragment).commit()
-        }
+
     }
 
     override fun sendResult() {
@@ -52,7 +47,6 @@ class MainActivity : AppCompatActivity(), QuizNavListener, QuizResultsListener {
 
     override fun closeQuiz() {
         finish()
-        exitProcess(0)
     }
 
 }

@@ -63,6 +63,11 @@ class ResultsFragment : Fragment() {
         }
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        listener = null
+    }
+
     private fun sendResults(results: ArrayList<Question>?) {
         val score = calculateResult(results).toString()
         val emailIntent = Intent(Intent.ACTION_SEND, Uri.parse("mailto:"))

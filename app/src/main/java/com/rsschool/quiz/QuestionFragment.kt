@@ -37,12 +37,14 @@ class QuestionFragment : Fragment() {
             amountOfQuestions = arguments?.getInt(QUESTIONS_AMOUNT) ?: 0
             currentPosition = arguments?.getInt(QUESTION_NUMBER) ?: -1
 
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                listener?.getPrevQuestion(currentPosition)
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+       if (currentPosition !=0) {
+           val callback = object : OnBackPressedCallback(true) {
+               override fun handleOnBackPressed() {
+                   listener?.getPrevQuestion(currentPosition)
+               }
+           }
+           requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
+       }
 
         val themeContext = setTheme(activeQuestion?.themeId!!)
         val localInflater = inflater.cloneInContext(themeContext)
@@ -53,7 +55,16 @@ class QuestionFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         displayQuestion()
+        initListeners()
+    }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+        listener = null
+    }
+
+    private fun initListeners() {
         binding.nextButton.setOnClickListener {
             if (currentPosition == (amountOfQuestions - 1)) {
                 listener?.sendResult()
@@ -84,11 +95,6 @@ class QuestionFragment : Fragment() {
         binding.toolbar.setNavigationOnClickListener {
             listener?.getPrevQuestion(currentPosition)
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
     }
 
     private fun setTheme(themeId: Int): ContextThemeWrapper {
