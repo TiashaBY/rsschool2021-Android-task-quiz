@@ -1,13 +1,14 @@
-package com.rsschool.quiz
+package com.rsschool.quiz.ui
 
 import android.R
 import android.content.Context
 import android.os.Bundle
 import android.view.*
-import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import com.rsschool.quiz.utils.Themes
 import com.rsschool.quiz.databinding.FragmentQuizBinding
+import com.rsschool.quiz.utils.PageStyleFlags
 import com.rsschool.quiz.models.Question
 
 
@@ -16,9 +17,10 @@ class QuestionFragment : Fragment() {
     private var _binding : FragmentQuizBinding? = null
     private val binding get() = checkNotNull(_binding)
 
-    private var currentPosition : Int = -1
+    private var pageStyle: PageStyleFlags? = null
     private var activeQuestion : Question? = null
     private var amountOfQuestions : Int = 0
+
     private var listener: QuizNavListener? = null
 
     override fun onAttach(context: Context) {
@@ -33,20 +35,11 @@ class QuestionFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-            activeQuestion = arguments?.getParcelable(ACTIVE_QUESTION)
-            amountOfQuestions = arguments?.getInt(QUESTIONS_AMOUNT) ?: 0
-            currentPosition = arguments?.getInt(QUESTION_NUMBER) ?: -1
+        activeQuestion = arguments?.getParcelable(ACTIVE_QUESTION)
+        amountOfQuestions = arguments?.getInt(QUESTIONS_AMOUNT) ?: 0
+        pageStyle = arguments?.getSerializable(PAGE_STYLE).let { it as PageStyleFlags }
 
-       if (currentPosition !=0) {
-           val callback = object : OnBackPressedCallback(true) {
-               override fun handleOnBackPressed() {
-                   listener?.getPrevQuestion(currentPosition)
-               }
-           }
-           requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
-       }
-
-        val themeContext = setTheme(activeQuestion?.themeId!!)
+        val themeContext = setTheme(Themes.getTheme(activeQuestion?.id!!))
         val localInflater = inflater.cloneInContext(themeContext)
         _binding = FragmentQuizBinding.inflate(localInflater, container, false)
         return binding.root
@@ -58,6 +51,15 @@ class QuestionFragment : Fragment() {
         initListeners()
     }
 
+    override fun onResume() {
+        super.onResume()
+        val typedValue = activeQuestion?.id?.let { Themes.getTheme(it).id }?.let {
+            context?.theme?.obtainStyledAttributes(
+                it, intArrayOf(R.attr.statusBarColor))
+        }
+        activity?.window?.statusBarColor = typedValue?.getColor(0, 0)!!
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -66,15 +68,11 @@ class QuestionFragment : Fragment() {
 
     private fun initListeners() {
         binding.nextButton.setOnClickListener {
-            if (currentPosition == (amountOfQuestions - 1)) {
-                listener?.sendResult()
-            } else {
-                listener?.getNextQuestion(currentPosition)
-            }
+            listener?.getNextQuestion()
         }
 
         binding.previousButton.setOnClickListener {
-            listener?.getPrevQuestion(currentPosition)
+            listener?.getPrevQuestion()
         }
         binding.radioGroup.setOnCheckedChangeListener { _, checkedId ->
             when (checkedId) {
@@ -93,23 +91,19 @@ class QuestionFragment : Fragment() {
         }
 
         binding.toolbar.setNavigationOnClickListener {
-            listener?.getPrevQuestion(currentPosition)
+            listener?.getPrevQuestion()
         }
     }
 
-    private fun setTheme(themeId: Int): ContextThemeWrapper {
-        val context = ContextThemeWrapper(context, activeQuestion?.themeId!!)
-        val typedValue = context.theme?.obtainStyledAttributes(
-            themeId,
-            intArrayOf(R.attr.statusBarColor)
-        )
-        activity?.window?.statusBarColor = typedValue?.getColor(0, 0)!!
+    private fun setTheme(theme: Themes): ContextThemeWrapper {
+        val context = ContextThemeWrapper(context, theme.id)
+        getContext()?.theme?.applyStyle(theme.id, true)
         return context
     }
 
     private fun displayQuestion() {
         binding.question.text = activeQuestion?.question
-        binding.toolbar.title = "Question ${currentPosition+1} of $amountOfQuestions"
+        binding.toolbar.title = "Question ${activeQuestion?.id} of $amountOfQuestions"
         binding.optionOne.text = activeQuestion?.options?.get(0)
         binding.optionTwo.text = activeQuestion?.options?.get(1)
         binding.optionThree.text = activeQuestion?.options?.get(2)
@@ -126,16 +120,16 @@ class QuestionFragment : Fragment() {
         }
 
         //buttons
-        when {
-            currentPosition <=0 -> {
+        when (pageStyle) {
+            PageStyleFlags.FIRST_PAGE -> {
                 binding.toolbar.navigationIcon = null
                 binding.previousButton.visibility = View.INVISIBLE
                 binding.nextButton.text = getString(com.rsschool.quiz.R.string.next_button_label)
             }
-            currentPosition == (amountOfQuestions - 1) -> {
+            PageStyleFlags.LAST_PAGE -> {
                 binding.nextButton.text = getString(com.rsschool.quiz.R.string.submit)
             }
-            else -> {
+             else -> {
                 binding.nextButton.text = getString(com.rsschool.quiz.R.string.next_button_label)
                 binding.previousButton.visibility = View.VISIBLE
             }
@@ -144,11 +138,12 @@ class QuestionFragment : Fragment() {
 
     companion object {
         @JvmStatic
-        fun newInstance(question :Question, questionsAmount: Int, questionNumber : Int): QuestionFragment {
+        fun newInstance(question:Question, questionsAmount: Int, pageStyle: PageStyleFlags = PageStyleFlags.NORMAL_PAGE): QuestionFragment {
             val fragment = QuestionFragment()
-            val args = bundleOf(ACTIVE_QUESTION to question,
+            val args = bundleOf(
+                ACTIVE_QUESTION to question,
                 QUESTIONS_AMOUNT to questionsAmount,
-                QUESTION_NUMBER to questionNumber
+                PAGE_STYLE to pageStyle
             )
             fragment.arguments = args
             return fragment
@@ -156,6 +151,6 @@ class QuestionFragment : Fragment() {
 
         private const val ACTIVE_QUESTION = "ACTIVE_QUESTION"
         private const val QUESTIONS_AMOUNT = "QUESTIONS_AMOUNT"
-        private const val QUESTION_NUMBER = "QUESTION_NUMBER"
+        private const val PAGE_STYLE = "PAGE_STYLE"
     }
 }

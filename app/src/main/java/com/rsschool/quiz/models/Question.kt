@@ -4,7 +4,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import java.util.*
 
-class Question(val id: Int, val question: String?, val options: ArrayList<String>?, val correctAnswer: Int, val themeId: Int) : Parcelable {
+class Question(val id: Int, val question: String?, val options: ArrayList<String>?, val correctAnswer: Int) : Parcelable {
 
     var selectedAnswer: Int = -1
 
@@ -12,7 +12,6 @@ class Question(val id: Int, val question: String?, val options: ArrayList<String
         parcel.readInt(),
         parcel.readString(),
         parcel.createStringArrayList(),
-        parcel.readInt(),
         parcel.readInt()
     ) {
         selectedAnswer = parcel.readInt()

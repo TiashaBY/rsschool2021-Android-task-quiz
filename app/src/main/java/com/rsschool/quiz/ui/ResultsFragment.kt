@@ -1,4 +1,4 @@
-package com.rsschool.quiz
+package com.rsschool.quiz.ui
 
 import android.content.Context
 import android.content.Intent
@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.activity.OnBackPressedCallback
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import com.rsschool.quiz.databinding.FragmentResultBinding
@@ -33,19 +32,13 @@ class ResultsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val callback = object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                listener?.resetQuiz()
-            }
-        }
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
         _binding = FragmentResultBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val results = arguments?.getParcelableArrayList<Question>("RESULT_LIST")
+        val results = arguments?.getParcelableArrayList<Question>(RESULT_LIST)
 
         val score = calculateResult(results).toString()
         binding.score.text = "Your result: $score%"
